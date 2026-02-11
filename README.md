@@ -7,20 +7,32 @@ A beginner-friendly chatbot project that's easy to understand and extend.
 - Simple keyword matching
 - Conversation history tracking
 - Interactive chat session
+- Simple learning mode: teach the bot new replies
+ - More human-style replies with a bit of personality (uses your name in some answers)
 
 ## How to Run
 ```bash
 python main.py
 ```
 
-Then just type messages and chat! Type `quit` to exit.
+Then give your bot a name, tell it your name, and just type messages and chat! Type `quit` to exit.
+
+### Teaching the Bot New Replies
+
+If the bot doesn't understand something you say, it will respond that it doesn't know how to reply.
+You can then teach it:
+
+1. When asked **"Do you want to teach me a reply? (yes/no)"**, type `yes`.
+2. Then type the reply you want the bot to use next time you write the same message.
+
+From that point on, the bot will remember and use your custom reply.
 
 ## TODO - Future Tasks
 
 ### Day 2: Improve Response Quality
-- [ ] Add more diverse responses to the `_load_basic_responses()` method
-- [ ] Implement fuzzy string matching (use `difflib` or `fuzzywuzzy` library)
-- [ ] Add more greeting variations
+- [x] Add more diverse responses to the `_load_basic_responses()` method
+- [x] Implement fuzzy string matching (use `difflib` or `fuzzywuzzy` library)
+- [x] Add more greeting variations
 
 ### Day 3: Data Persistence
 - [ ] Save conversation history to a JSON file
