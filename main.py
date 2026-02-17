@@ -1,5 +1,6 @@
 import random
 import difflib
+import utils
 
 
 class SimpleBot:
@@ -8,6 +9,7 @@ class SimpleBot:
         self.user_name = user_name
 
         self.responses = self._load_basic_responses()
+        self.learned_responses = {}  # Track custom learned responses separately
         self.history = []
 
     def _load_basic_responses(self):
@@ -48,10 +50,35 @@ class SimpleBot:
             return text.replace("{user}", "there")
         return text
     
+    def load_previous_data(self):
+        """Load previous conversation history and learned responses."""
+        data = utils.load_conversation_history(self.name)
+        if data:
+            self.learned_responses = data.get("learned_responses", {})
+            old_history = data.get("history", [])
+            if old_history:
+                print(f"\n{self.name}: I found our previous conversation from {utils.format_timestamp(data['timestamp'])}!")
+                print(f"{self.name}: We had {len(old_history)} messages before.\n")
+            return True
+        return False
+    
+    def save_data(self):
+        """Save conversation history and learned responses."""
+        return utils.save_conversation_history(
+            self.name, 
+            self.user_name, 
+            self.history,
+            self.learned_responses
+        )
+    
     def get_response(self, user_input):
         user_input = user_input.lower().strip()
 
+        # Check learned responses first (higher priority)
+        if user_input in self.learned_responses:
+            return self._personalize(random.choice(self.learned_responses[user_input]))
 
+        # Then check built-in responses
         if user_input in self.responses:
             return self._personalize(random.choice(self.responses[user_input]))
 
@@ -67,6 +94,9 @@ class SimpleBot:
         return None
     
     def chat(self):
+        # Load previous data if available
+        self.load_previous_data()
+        
         if self.user_name:
             print(f"\n{self.name}: Hey {self.user_name}, I'm {self.name}. Type 'quit' to exit.\n")
         else:
@@ -76,7 +106,11 @@ class SimpleBot:
             user_input = input("You: ")
             
             if user_input.lower() == "quit":
-                print(f"{self.name}: Goodbye!")
+                print(f"{self.name}: Saving our conversation...")
+                if self.save_data():
+                    print(f"{self.name}: Saved! See you next time!")
+                else:
+                    print(f"{self.name}: Couldn't save, but goodbye anyway!")
                 break
             
             response = self.get_response(user_input)
@@ -88,7 +122,10 @@ class SimpleBot:
                     new_reply = input(f"{self.name}: What should I say next time? ").strip()
                     if new_reply:
                         normalized = user_input.lower().strip()
-                        self.responses[normalized] = new_reply
+                        if normalized in self.learned_responses:
+                            self.learned_responses[normalized].append(new_reply)
+                        else:
+                            self.learned_responses[normalized] = [new_reply]
                         response = new_reply
                         print(f"{self.name}: Got it, I'll remember that!\n")
                     else:
